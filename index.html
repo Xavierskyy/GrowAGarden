@@ -9,28 +9,44 @@
     body {
       background: linear-gradient(to bottom right, #1a202c, #2d3748);
     }
+    .fade-enter {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .fade-enter-active {
+      opacity: 1;
+      transform: translateY(0);
+      transition: all 0.3s ease-in-out;
+    }
   </style>
 </head>
-<body class="text-white min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col text-white">
 
   <!-- Header -->
   <header class="bg-black/30 backdrop-blur-md border-b border-white/10 py-6 px-4 sticky top-0 z-10">
-    <div class="max-w-4xl mx-auto text-center">
+    <div class="max-w-7xl mx-auto text-center">
       <h1 class="text-3xl font-extrabold tracking-tight" data-lang="title">Roblox Trade Stock Market</h1>
       <a href="https://discord.gg/YOUR_LINK_HERE " target="_blank"
          class="mt-2 inline-block text-sm text-indigo-300 hover:text-indigo-100 transition-colors duration-300" data-lang="discord-link">
         Join our Discord Server
       </a>
 
-      <!-- Language Toggle Button -->
-      <button id="langToggle" class="mt-4 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-xs font-medium transition-colors duration-300">
-        PL → EN
-      </button>
+      <!-- Controls -->
+      <div class="flex justify-center gap-3 mt-4 flex-wrap">
+        <select id="sortSelect" class="bg-white/10 border border-white/20 rounded px-3 py-1 text-sm text-white focus:outline-none">
+          <option value="discount-desc">Największy rabat</option>
+          <option value="price-asc">Najtańsze</option>
+        </select>
+
+        <button id="langToggle" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-xs font-medium transition-colors duration-300">
+          PL → EN
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+  <main class="flex-grow max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
     <div id="itemsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Items will be injected here by JS -->
     </div>
@@ -64,12 +80,14 @@
       }
     };
 
-    let currentLang = 'en';
+    // Wykryj język przeglądarki
+    const browserLang = navigator.language.split('-')[0];
+    let currentLang = ['pl', 'en'].includes(browserLang) ? browserLang : 'en';
+    let currentSort = 'discount-desc';
 
     function setLanguage(lang) {
       currentLang = lang;
 
-      // Aktualizacja tekstu nagłówków i linków
       document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -77,11 +95,77 @@
         }
       });
 
-      // Odświeżenie kart przedmiotów z nowymi etykietami
-      renderItems();
-
-      // Zmiana napisu na przycisku
+      renderItemsWithAnimation();
       document.getElementById('langToggle').textContent = lang === 'en' ? 'PL → EN' : 'EN → PL';
+    }
+
+    function fadeOut(element, callback) {
+      element.classList.remove('fade-enter-active');
+      element.classList.add('fade-enter');
+      setTimeout(() => {
+        callback();
+        element.classList.remove('fade-enter');
+        element.classList.add('fade-enter-active');
+      }, 10);
+    }
+
+    function sortItems(items) {
+      return [...items].sort((a, b) => {
+        const aDiscount = parseInt(a.discount);
+        const bDiscount = parseInt(b.discount);
+
+        const aPrice = parseFloat(a.newPrice.replace('$', ''));
+        const bPrice = parseFloat(b.newPrice.replace('$', ''));
+
+        switch (currentSort) {
+          case 'discount-desc':
+            return bDiscount - aDiscount;
+          case 'price-asc':
+            return aPrice - bPrice;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    function renderItemsWithAnimation() {
+      const container = document.getElementById("itemsGrid");
+      fadeOut(container, () => {
+        container.innerHTML = '';
+        sortItems(items).forEach(item => {
+          const card = createItemCard(item, currentLang);
+          container.appendChild(card);
+        });
+      });
+    }
+
+    function createItemCard(item, lang) {
+      const card = document.createElement("div");
+      card.className = "bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg hover:shadow-indigo-500/30 transition-shadow duration-300 border border-white/10 p-6";
+
+      card.innerHTML = `
+        <h2 class="text-2xl font-bold mb-6">${item.name}</h2>
+        <div class="space-y-4 text-base sm:text-lg">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">${translations[lang]["value"]}:</span>
+            <span class="font-semibold text-lg">${item.value}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">${translations[lang]["original-price"]}:</span>
+            <span class="line-through text-gray-500">${item.oldPrice}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">${translations[lang]["discount"]}:</span>
+            <span class="text-red-400 font-bold text-lg">${item.discount}</span>
+          </div>
+          <div class="flex justify-between items-center pt-3 border-t border-white/10 mt-3">
+            <span class="text-gray-400">${translations[lang]["new-price"]}:</span>
+            <span class="font-bold text-green-400 text-xl">${item.newPrice}</span>
+          </div>
+        </div>
+      `;
+
+      return card;
     }
 
     // Mock data for items
@@ -94,53 +178,16 @@
       { name: "Fire Staff", value: "$220", oldPrice: "$300", discount: "27%", newPrice: "$220" }
     ];
 
-    const itemsGrid = document.getElementById("itemsGrid");
-
-    function createItemCard(item, lang) {
-      const card = document.createElement("div");
-      card.className = "bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg hover:shadow-indigo-500/30 transition-shadow duration-300 border border-white/10";
-
-      card.innerHTML = `
-        <div class="p-5">
-          <h2 class="text-xl font-bold mb-3">${item.name}</h2>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between items-center">
-              <span class="text-gray-400">${translations[lang]["value"]}:</span>
-              <span class="font-semibold">${item.value}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-400">${translations[lang]["original-price"]}:</span>
-              <span class="line-through text-gray-500">${item.oldPrice}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-400">${translations[lang]["discount"]}:</span>
-              <span class="text-red-400 font-medium">${item.discount}</span>
-            </div>
-            <div class="flex justify-between items-center pt-1 border-t border-white/5 mt-2">
-              <span class="text-gray-400">${translations[lang]["new-price"]}:</span>
-              <span class="font-bold text-green-400">${item.newPrice}</span>
-            </div>
-          </div>
-        </div>
-      `;
-
-      return card;
-    }
-
-    function renderItems() {
-      itemsGrid.innerHTML = '';
-      items.forEach(item => {
-        const card = createItemCard(item, currentLang);
-        itemsGrid.appendChild(card);
-      });
-    }
-
-    // Inicjalne renderowanie
-    renderItems();
+    // Inicjalizacja
     document.getElementById("year").textContent = new Date().getFullYear();
+    setLanguage(currentLang);
 
-    // Obsługa zmiany języka
-    document.getElementById("langToggle").addEventListener("click", () => {
+    document.getElementById('sortSelect').addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      renderItemsWithAnimation();
+    });
+
+    document.getElementById('langToggle').addEventListener('click', () => {
       const newLang = currentLang === 'en' ? 'pl' : 'en';
       setLanguage(newLang);
     });
