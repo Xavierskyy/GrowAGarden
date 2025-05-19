@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roblox Trade Stock Market</title>
+  <script src="https://cdn.tailwindcss.com "></script>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #1a202c, #2d3748);
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-black/30 backdrop-blur-md border-b border-white/10 py-6 px-4 sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-3xl font-extrabold tracking-tight">Roblox Trade Stock Market</h1>
+      <a href="https://discord.gg/YOUR_LINK_HERE " target="_blank"
+         class="mt-2 inline-block text-sm text-indigo-300 hover:text-indigo-100 transition-colors duration-300">
+        Join our Discord Server
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+    <div id="itemsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Items will be injected here by JS -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-black/30 backdrop-blur-md border-t border-white/10 py-4 px-4 text-center text-sm text-gray-400">
+    &copy; <span id="year"></span> Roblox Trade Stock Market. No real money involved.
+  </footer>
+
+  <script>
+    // Mock data for Roblox trade stock items with USD prices
+    const items = [
+      { name: "Golden Sword", value: "$150", oldPrice: "$200", discount: "25%", newPrice: "$150" },
+      { name: "Shadow Cloak", value: "$80", oldPrice: "$120", discount: "33%", newPrice: "$80" },
+      { name: "Dragon Wings", value: "$300", oldPrice: "$400", discount: "25%", newPrice: "$300" },
+      { name: "Space Helmet", value: "$60", oldPrice: "$90", discount: "33%", newPrice: "$60" },
+      { name: "Mystic Ring", value: "$100", oldPrice: "$140", discount: "29%", newPrice: "$100" },
+      { name: "Fire Staff", value: "$220", oldPrice: "$300", discount: "27%", newPrice: "$220" }
+    ];
+
+    const itemsGrid = document.getElementById("itemsGrid");
+
+    function createItemCard(item) {
+      const card = document.createElement("div");
+      card.className = "bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg hover:shadow-indigo-500/30 transition-shadow duration-300 border border-white/10";
+
+      card.innerHTML = `
+        <div class="p-5">
+          <h2 class="text-xl font-bold mb-3">${item.name}</h2>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-400">Value:</span>
+              <span class="font-semibold">${item.value}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-400">Original Price:</span>
+              <span class="line-through text-gray-500">${item.oldPrice}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-400">Discount:</span>
+              <span class="text-red-400 font-medium">${item.discount}</span>
+            </div>
+            <div class="flex justify-between items-center pt-1 border-t border-white/5 mt-2">
+              <span class="text-gray-400">New Price:</span>
+              <span class="font-bold text-green-400">${item.newPrice}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Render items
+    items.forEach(item => {
+      const card = createItemCard(item);
+      itemsGrid.appendChild(card);
+    });
+
+    // Set current year in footer
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
