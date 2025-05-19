@@ -16,11 +16,16 @@
   <!-- Header -->
   <header class="bg-black/30 backdrop-blur-md border-b border-white/10 py-6 px-4 sticky top-0 z-10">
     <div class="max-w-4xl mx-auto text-center">
-      <h1 class="text-3xl font-extrabold tracking-tight">Roblox Trade Stock Market</h1>
+      <h1 class="text-3xl font-extrabold tracking-tight" data-lang="title">Roblox Trade Stock Market</h1>
       <a href="https://discord.gg/YOUR_LINK_HERE " target="_blank"
-         class="mt-2 inline-block text-sm text-indigo-300 hover:text-indigo-100 transition-colors duration-300">
+         class="mt-2 inline-block text-sm text-indigo-300 hover:text-indigo-100 transition-colors duration-300" data-lang="discord-link">
         Join our Discord Server
       </a>
+
+      <!-- Language Toggle Button -->
+      <button id="langToggle" class="mt-4 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-xs font-medium transition-colors duration-300">
+        PL → EN
+      </button>
     </div>
   </header>
 
@@ -33,11 +38,53 @@
 
   <!-- Footer -->
   <footer class="bg-black/30 backdrop-blur-md border-t border-white/10 py-4 px-4 text-center text-sm text-gray-400">
-    &copy; <span id="year"></span> Roblox Trade Stock Market. No real money involved.
+    <span data-lang="footer-text">&copy; <span id="year"></span> Roblox Trade Stock Market. No real money involved.</span>
   </footer>
 
   <script>
-    // Mock data for Roblox trade stock items with USD prices
+    // Tłumaczenia
+    const translations = {
+      en: {
+        title: "Roblox Trade Stock Market",
+        "discord-link": "Join our Discord Server",
+        "footer-text": "&copy; <span id='year'></span> Roblox Trade Stock Market. No real money involved.",
+        "value": "Value",
+        "original-price": "Original Price",
+        "discount": "Discount",
+        "new-price": "New Price"
+      },
+      pl: {
+        title: "Giełda Przedmiotów w Roblox",
+        "discord-link": "Dołącz do naszego serwera Discord",
+        "footer-text": "&copy; <span id='year'></span> Giełda Przedmiotów w Roblox. Brak prawdziwych pieniędzy.",
+        "value": "Wartość",
+        "original-price": "Cena początkowa",
+        "discount": "Rabat",
+        "new-price": "Nowa cena"
+      }
+    };
+
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+
+      // Aktualizacja tekstu nagłówków i linków
+      document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (translations[lang][key]) {
+          el.innerHTML = translations[lang][key];
+        }
+      });
+
+      // Odświeżenie kart przedmiotów z nowymi etykietami
+      renderItems();
+
+      // Zmiana napisu na przycisku
+      document.getElementById('langToggle').textContent = lang === 'en' ? 'PL → EN' : 'EN → PL';
+    }
+
+    // Mock data for items
     const items = [
       { name: "Golden Sword", value: "$150", oldPrice: "$200", discount: "25%", newPrice: "$150" },
       { name: "Shadow Cloak", value: "$80", oldPrice: "$120", discount: "33%", newPrice: "$80" },
@@ -49,7 +96,7 @@
 
     const itemsGrid = document.getElementById("itemsGrid");
 
-    function createItemCard(item) {
+    function createItemCard(item, lang) {
       const card = document.createElement("div");
       card.className = "bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg hover:shadow-indigo-500/30 transition-shadow duration-300 border border-white/10";
 
@@ -58,19 +105,19 @@
           <h2 class="text-xl font-bold mb-3">${item.name}</h2>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between items-center">
-              <span class="text-gray-400">Value:</span>
+              <span class="text-gray-400">${translations[lang]["value"]}:</span>
               <span class="font-semibold">${item.value}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-400">Original Price:</span>
+              <span class="text-gray-400">${translations[lang]["original-price"]}:</span>
               <span class="line-through text-gray-500">${item.oldPrice}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-400">Discount:</span>
+              <span class="text-gray-400">${translations[lang]["discount"]}:</span>
               <span class="text-red-400 font-medium">${item.discount}</span>
             </div>
             <div class="flex justify-between items-center pt-1 border-t border-white/5 mt-2">
-              <span class="text-gray-400">New Price:</span>
+              <span class="text-gray-400">${translations[lang]["new-price"]}:</span>
               <span class="font-bold text-green-400">${item.newPrice}</span>
             </div>
           </div>
@@ -80,15 +127,23 @@
       return card;
     }
 
-    // Render items
-    items.forEach(item => {
-      const card = createItemCard(item);
-      itemsGrid.appendChild(card);
-    });
+    function renderItems() {
+      itemsGrid.innerHTML = '';
+      items.forEach(item => {
+        const card = createItemCard(item, currentLang);
+        itemsGrid.appendChild(card);
+      });
+    }
 
-    // Set current year in footer
+    // Inicjalne renderowanie
+    renderItems();
     document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
 
+    // Obsługa zmiany języka
+    document.getElementById("langToggle").addEventListener("click", () => {
+      const newLang = currentLang === 'en' ? 'pl' : 'en';
+      setLanguage(newLang);
+    });
+  </script>
 </body>
 </html>
